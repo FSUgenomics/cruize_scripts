@@ -2,7 +2,6 @@
 
 
 echo "starting browser refresh..."
-echo "LALALALALALALLALALALALALALALA"
 
 update_perms
 get_gbdb
@@ -11,7 +10,7 @@ get_dbdb
 until hgsql -e "show databases;"
 do
   echo "Attempting to connect to database"
-  sleep 3
+  sleep 5
 done
 
 update_dbDb
