@@ -3,9 +3,12 @@
 if [ "$(ls -A /var/lib/mysql)" ]; then
   if pgrep "mysqld" > /dev/null; then
     echo "mysqld is running"
+    mysqlcheck -u root password ${SQL_PASSWORD} -A --auto-repair
   else
     echo "mysqld not running, starting..."
     mysqld_safe & sleep 5
+    mysqlcheck -u root password ${SQL_PASSWORD} -A --auto-repair
+
   fi
 else
   echo "no mysql database found, initiating..."
@@ -27,7 +30,7 @@ else
   mysql_install_db --user=mysql
   mysqld_safe --local-infile=1 & sleep 5
   mysqladmin -u root password ${SQL_PASSWORD}
-
+  
   # setup minimum browser tables
   mysql -uroot -p${SQL_PASSWORD} -e "create database hgFixed"
   mysql -uroot -p${SQL_PASSWORD} -e "create database hgcentral"
