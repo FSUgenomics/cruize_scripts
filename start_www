@@ -23,9 +23,14 @@ sed -i 's#customTracks\.tmpdir=.*#customTracks\.tmpdir='/var/www/trash/ct'#g' /v
 sed -i 's#browser.documentRoot=.*#browser.documentRoot='/var/www'#g' /var/www/cgi-bin/hg.conf
 
 if pgrep "httpd" > /dev/null; then
-  echo "httpd running"
+  echo "httpd running, restarting"
+  apachectl -k graceful-stop
+  sleep 2
+  usermod -u $APACHE_UID apache
+  apachectl
 else
   echo "httpd not running, starting..."
+  usermod -u $APACHE_UID apache
   apachectl
 fi
 
