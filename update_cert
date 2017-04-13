@@ -2,7 +2,7 @@
 
 
 
-if [ $FQDN == *"."* ]; then
+if [[ $FQDN == *"."* ]]; then
 
   if pgrep -x "httpd" > /dev/null; then
     "APACHE ALREADY RUNNING"
