@@ -56,6 +56,9 @@ do
           bed)
             hgLoadBed $name $track $bigDataUrl
             ;;
+          bedDetail)
+            hgLoadBed -bedDetail -tab -as=${_asPath} -sqlTable=${_sqlTablePath} -renameSqlTable $name $track $bigDataUrl
+            ;;
           genePred)
             hgLoadGenePred $name $track $bigDataUrl
             ;;
