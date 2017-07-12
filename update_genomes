@@ -54,7 +54,13 @@ do
             hgBbiDbLink $name $track $bigDataUrl
             ;;
           bed)
-            hgLoadBed $name $track $bigDataUrl
+            #type3=$(echo $type | tr -d ' ')
+            if [[ -z ${_asPath} ]] || [[ ${_asPath} == "NA" ]] || [[ -z ${_sqlTablePath} ]] || [[ ${_sqlTablePath} == "NA" ]]; then
+          
+                   hgLoadBed -tab $name $track $bigDataUrl
+            else
+                   hgLoadBed -tab -as=${_asPath} -sqlTable=${_sqlTablePath} -renameSqlTable $name $track $bigDataUrl
+            fi 
             ;;
           bedDetail)
             hgLoadBed -bedDetail -tab -as=${_asPath} -sqlTable=${_sqlTablePath} -renameSqlTable $name $track $bigDataUrl
