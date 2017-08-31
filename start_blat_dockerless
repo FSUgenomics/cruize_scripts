@@ -49,15 +49,15 @@ do
   
     twoBitPath=${HOME}/cruize/${nibPath}/genome.2bit
     
-    if [[ ! -f $twoBitPath ]]; then
-      >&2 echo "downloading $name 2bit from ${FQDN}/${nibPath}/genome.2bit to $twoBitPath"
-      mkdir -p ${HOME}/cruize/${nibPath}
-      curl -so $twoBitPath ${FQDN}/${nibPath}/genome.2bit
-    else
-      >&2 echo "$name 2bit already present in $twoBitPath"
-    fi
-    
     if [[ $(hostname) == $nBlatHost ]] && [[ $nBlatPort != "NA" ]]; then
+      if [[ ! -f $twoBitPath ]]; then
+        >&2 echo "downloading $name 2bit from ${FQDN}/${nibPath}/genome.2bit to $twoBitPath"
+        mkdir -p ${HOME}/cruize/${nibPath}
+        curl -so $twoBitPath ${FQDN}/${nibPath}/genome.2bit
+      else
+        >&2 echo "$name 2bit already present in $twoBitPath"
+      fi
+    
       echo "starting nucleotide blat service for $name"
       gfServer -tileSize=7 -canStop start $(hostname).$DOMAIN $nBlatPort -stepSize=5 $twoBitPath &
     fi
