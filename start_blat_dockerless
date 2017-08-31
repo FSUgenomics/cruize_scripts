@@ -51,7 +51,8 @@ do
     
     if [[ ! -f $twoBitPath ]]; then
       >&2 echo "downloading $name 2bit from ${FQDN}/${nibPath}/genome.2bit to $twoBitPath"
-      curl -o $twoBitPath ${FQDN}/${nibPath}/genome.2bit
+      mkdir -p ${HOME}/cruize/${nibPath}
+      curl -so $twoBitPath ${FQDN}/${nibPath}/genome.2bit
     else
       >&2 echo "$name 2bit already present in $twoBitPath"
     fi
