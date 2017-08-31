@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [[ -z $DOMAIN ]]; then
+  DOMAIN=local
+fi
+
+tmpPath=${HOME}/cruize/tmp
+
+mkdir -p ${HOME}/cruize $tmpPath
 
 # get dbDb spreadsheet
 echo "downloading dbDb spreadsheet from https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key="$DBDBID"&hl=en&exportFormat=tsv"
@@ -17,31 +24,46 @@ curl -sL "https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key
     if(NR>1 && $cols["active"]==1){
       print $0
     }
-  }' OFS='\t' > /tmp/dbDb.tsv
+  }' OFS='\t' > $tmpPath/dbDb.tsv
 
-
-numGenomes=$(grep -v "^name" /tmp/dbDb.tsv | wc -l)
-echo "found" $numGenomes "activated genomes"
-if [ "$numGenomes" -lt 2 ]; then
-  exit 0
+grep "^<" $tmpPath/dbDb.tsv
+if [[ $? -eq 0 ]]; then
+  >&2 echo "spreadsheet does not exist or is not publicly-accessible"
+  exit 1
 fi
 
+numGenomes=$(grep -v "^name" $tmpPath/dbDb.tsv | wc -l)
+echo "found" $numGenomes "activated genomes"
+if [ "$numGenomes" -lt 2 ]; then
+  >&2 echo "no active genomes in spreadsheet"
+  exit 1
+fi
 
 pkill gfServer || :
 
 echo "processing genomes"
-cols=$(head -n 1 /tmp/dbDb.tsv)
-tail -n+2 /tmp/dbDb.tsv | while IFS=$'\t' read -r $cols
+cols=$(head -n 1 $tmpPath/dbDb.tsv)
+tail -n+2 $tmpPath/dbDb.tsv | while IFS=$'\t' read -r $cols
 do
   if [ $active -eq 1 ]; then
+  
+    twoBitPath=${HOME}/cruize/${nibPath}/genome.2bit
+    
+    if [[ ! -f $twoBitPath ]]; then
+      >&2 echo "downloading $name 2bit from ${FQDN}/${nibPath}/genome.2bit to $twoBitPath"
+      curl -o $twoBitPath ${FQDN}/${nibPath}/genome.2bit
+    else
+      >&2 echo "$name 2bit already present in $twoBitPath"
+    fi
+    
     if [[ $(hostname) == $nBlatHost ]] && [[ $nBlatPort != "NA" ]]; then
       echo "starting nucleotide blat service for $name"
-      gfServer -tileSize=7 -canStop start $(hostname).$DOMAIN $nBlatPort -stepSize=5 $nibPath/genome.2bit &
+      gfServer -tileSize=7 -canStop start $(hostname).$DOMAIN $nBlatPort -stepSize=5 $twoBitPath &
     fi
 
     if [[ $(hostname) == $pBlatHost ]] && [[ $pBlatPort != "NA" ]]; then
       echo "starting protein blat service for $name"
-      gfServer -trans -canStop start $(hostname).$DOMAIN $pBlatPort $nibPath/genome.2bit &
+      gfServer -trans -canStop start $(hostname).$DOMAIN $pBlatPort ${HOME}/cruize/${nibPath}/genome.2bit &
     fi
   fi
 done
